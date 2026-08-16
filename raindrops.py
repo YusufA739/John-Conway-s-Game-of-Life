@@ -4,7 +4,7 @@ from colorama import Fore, Back, Style
 
 #change these to change frame size
 linesperframe = 50#55x209 for fullscreen command prompt for my pc
-cellsperline = 200
+cellsperline = 50
 # linesperframe = int(input("type in your height:"))
 # cellsperline = len(input("use this to calibrate your width and paste the line length:"))
 
@@ -177,7 +177,7 @@ while True:
     if frameCount % targetFramerate == 0:
         end = time.perf_counter()
         delta = end - start
-        correctedDelta = delta / frameCount
-        file.write("Target: "+str(targetFramerate)+"\n"+"Actual: "+str(1/correctedDelta)+"\n")
+        deltaPerFrameArithmeticAverage = delta / frameCount
+        file.write("Target: "+str(targetFramerate)+"\n"+"Actual: "+str(1/deltaPerFrameArithmeticAverage)+"\n")
         file.flush()#will force the buffer to write to file so that if the program is closed without closing file, it will still save the last result
         start = time.perf_counter()
