@@ -1,6 +1,107 @@
 import time,pygame,random
 from pygame import mixer
-snake_speed=10
+
+import random,sys,time,os,copy
+from colorama import Fore, Back, Style
+
+
+#change these to change frame size
+linesperframe = 72#55x209 for fullscreen command prompt for my pc
+cellsperline = 48
+# linesperframe = int(input("type in your height:"))
+# cellsperline = len(input("use this to calibrate your width and paste the line length:"))
+
+grid = []#used to keep all pixels zero
+livelinessGrid = []
+new_livelinessGrid = []
+gridlines = []#for building grid only (see below in for loops)
+livelines = []#for building grid only (see below in for loops)
+
+for carrier in range(cellsperline):
+    gridlines.append(0)
+
+for carrier in range(linesperframe):
+    grid.append(copy.deepcopy(gridlines))
+
+for carrier in range(linesperframe):
+    for carrier in range(cellsperline):
+        livelines.append(random.randint(0,1))
+    livelinessGrid.append(copy.deepcopy(livelines))
+    livelines = []
+
+livelinessGrid[6][8] = 1
+livelinessGrid[7][7] = 1
+
+livelinessGrid[7][8] = 1
+
+livelinessGrid[7][9] = 1
+livelinessGrid[8][7] = 1
+# livelinessGrid[8][8] = 1
+livelinessGrid[8][9] = 1
+livelinessGrid[9][8] = 1
+# livelinessGrid[9][8] = 1
+# livelinessGrid[9][9] = 1
+
+#change to alter line rest time and frame rest time (in seconds)
+cellresttime = 0
+lineresttime = 0
+frameresttime = 0
+
+targetFramerate = 40
+currentFramerate = 0
+
+frameCount = 0
+file = open("framerate.txt", "w")
+start = time.perf_counter()#for inital measurement, will be wrong until it updates in if statement (reduces frame delays due to extra timer processing)
+
+deactivateTop = False # no negative i so no i-1
+deactivateBottom = False# no checking i+1
+deactivateLeft = False# no checking j-1
+deactivateRight = False#no checking j+1
+
+#wont automatically clear frame as we allow user to have finer control over when they want it cleared
+#tradeoff between finer control and less controls is more vs less complexity, respectively
+def drawframe(imageData,crtGiven=None,lrtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
+    global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
+    if crtGiven is None:
+        crtGiven = cellresttime
+    if lrtGiven is None:
+        lrtGiven = lineresttime
+    if frtGiven is None:
+        frtGiven = frameresttime
+    if lpfGiven is None:
+        lpfGiven = linesperframe
+    if cplGiven is None:
+        cplGiven = cellsperline
+    # display next frame data
+    for line in range(lpfGiven):
+        for cell in range(cplGiven):
+            if imageData[line][cell] == 0:
+                # sys.stdout.write(Fore.BLACK + str(imageData[line][cell]))
+                sys.stdout.write(Fore.BLACK + "0")
+                pygame.draw.rect(game_window, black, pygame.Rect(line*10 , cell*10, 10, 10))
+            else:
+                # sys.stdout.write(Fore.WHITE + str(imageData[line][cell]))
+                sys.stdout.write(Fore.WHITE + "0")
+                pygame.draw.rect(game_window, white, pygame.Rect(line*10, cell*10, 10, 10))
+            time.sleep(crtGiven)#sleep for cell
+        sys.stdout.write("\n")
+
+        time.sleep(lrtGiven)#sleep for line
+    time.sleep(frtGiven)#sleep for frame
+
+def clearframe():
+    os.system("cls")
+
+#unused so far (from old raindrops code)
+#change these to change what numbers appear in the raindrops
+lowestraindropnumber = 0
+highestraindropnumber = 9
+if highestraindropnumber > lowestraindropnumber:
+    highestraindropnumber = lowestraindropnumber
+
+
+
 
 #window size
 window_x= 720
@@ -28,40 +129,17 @@ game_window=pygame.display.set_mode((window_x, window_y))
 #FPS (frames per second) controller
 fps=pygame.time.Clock()
 
-#snake default position
-snake_position=[100,50]
-snake_body=[[100,50],[90,50],[80,50],[70,50]]
-
-
-#fruit pos
-fruit_position = [random.randint(1, (window_x//10)) * 10, random.randint(1, (window_y//10)) * 10]
-
-fruit_spawn= True
-
 #setting default direction for snake
 direction="RIGHT"
 change_to=direction
 
 
-# initial score
-score = 0
  
 # displaying Score function
 def show_score(choice, color, font, size):
    
     # creating font object score_font
     score_font = pygame.font.SysFont(font, size)
-     
-    # create the display surface object
-    # score_surface
-    score_surface = score_font.render('Score : ' + str(score), True, color)
-     
-    # create a rectangular object for the
-    # text surface object
-    score_rect = score_surface.get_rect()
-     
-    # displaying text
-    game_window.blit(score_surface, score_rect)
 
 # game over function
 def game_over():
@@ -69,144 +147,109 @@ def game_over():
     # creating font object my_font
     my_font = pygame.font.SysFont('times new roman', 50)
      
-    # creating a text surface on which text
-    # will be drawn
-    game_over_surface = my_font.render('Your Score is : ' + str(score), True, red)
-     
-    # create a rectangular object for the text
-    # surface object
-    game_over_rect = game_over_surface.get_rect()
-     
-    # setting position of the text
-    game_over_rect.midtop = (window_x/2, window_y/4)
-     
-    # blit will draw the text on screen
-    game_window.blit(game_over_surface, game_over_rect)
-    pygame.display.flip()
-     
     # after 2 seconds we will quit the (now 1 sec)
     # program
     time.sleep(1)
      
     # deactivating pygame library
     pygame.quit()
-    """
-    mixer.music.pause()
-    mixer.music.unpause()
-    mixer.music.pause()
-    mixer.music.play()
-    mixer.music.pause()
-    mixer.music.stop()
-    """
     # quit the program
     quit()
 
 # Main Function
 while True:
-   
-    # handling key events
-    for event in pygame.event.get():
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                change_to = 'UP'
-            if event.key == pygame.K_DOWN:
-                change_to = 'DOWN'
-            if event.key == pygame.K_LEFT:
-                change_to = 'LEFT'
-            if event.key == pygame.K_RIGHT:
-                change_to = 'RIGHT'
-            if event.key == pygame.K_ESCAPE:
-                #myfont=pygame.font.SysFont('times new roman', 50)
-                #pause_text = myfont.render("Paused for 5s",True,blue)
-                #rectangle_for_text = pause_text.get_rect()
-                #game_window.blit(pause_text,rectangle_for_text)
-                time.sleep(5)
- 
-    # If two keys pressed simultaneously
-    # we don't want snake to move into two directions
-    # simultaneously
-    if change_to == 'UP' and direction != 'DOWN':
-        direction = 'UP'
-    if change_to == 'DOWN' and direction != 'UP':
-        direction = 'DOWN'
-    if change_to == 'LEFT' and direction != 'RIGHT':
-        direction = 'LEFT'
-    if change_to == 'RIGHT' and direction != 'LEFT':
-        direction = 'RIGHT'
- 
-    # Moving the snake
-    if direction == 'UP':
-        snake_position[1] -= 10
-    if direction == 'DOWN':
-        snake_position[1] += 10
-    if direction == 'LEFT':
-        snake_position[0] -= 10
-    if direction == 'RIGHT':
-        snake_position[0] += 10
- 
-    # Snake body growing mechanism
-    # if fruits and snakes collide then scores will be
-    # incremented by 10
-    snake_body.insert(0, list(snake_position))
-    if snake_position[0] == fruit_position[0] and snake_position[1] == fruit_position[1]:
-        score += 1
-        mixer.Sound("pop final.mp3").play(0)
+    pygame.event.get()
 
-        
-        #my edit cool for increase
-        if snake_speed==100:
-            snake_speed+=0.5
-        else:
-            snake_speed+=1
-        #endofedit
+    new_livelinessGrid = copy.deepcopy(livelinessGrid)
 
-        fruit_spawn = False
-    else:
-        snake_body.pop()
-         
-    if not fruit_spawn:
-        fruit_position = [random.randrange(1, (window_x//10)) * 10,
-                          random.randrange(1, (window_y//10)) * 10]
-         
-    fruit_spawn = True
-    game_window.fill(black)
-     
-    for pos in snake_body:
-        pygame.draw.rect(game_window, green, pygame.Rect(
-          pos[0], pos[1], 10, 10))
-         
-    pygame.draw.rect(game_window, white, pygame.Rect(
-      fruit_position[0], fruit_position[1], 10, 10))
- 
-    # Game Over conditions
-    if snake_position[0] < 0 or snake_position[0] > window_x-10:
+    for i in range(linesperframe):
+        for j in range(cellsperline):
+            deactivateTop = False  # no negative i so no i-1
+            deactivateBottom = False  # no checking i+1
+            deactivateLeft = False  # no checking j-1
+            deactivateRight = False  # no checking j+1
+            NeighbourCount = 0
+            # if i == 0:
+            #     if j == 0:
+            #         NeighbourCount += livelinessGrid[i + 1][j]
+            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
+            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
+            #     elif j > 0:
+            #         NeighbourCount += livelinessGrid[i][j - 1]
+            #         NeighbourCount += livelinessGrid[i + 1][j - 1]
+            #         NeighbourCount += livelinessGrid[i + 1][j]
+            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
+            #         NeighbourCount += livelinessGrid[i][j + 1]
+            # didnt bother completing as ive simplified the redundancy between neighbour checking below
 
-        if snake_position[0] < 0:
-            snake_position[0]=window_x
-        else:
-            snake_position[0]=0
-        #game_over()
-    if snake_position[1] < 0 or snake_position[1] > window_y-10:
+            if i == 0:
+                deactivateTop = True
+            if i == linesperframe - 1:
+                deactivateBottom = True
+            if j == 0:
+                deactivateLeft = True
+            if j == cellsperline - 1:
+                deactivateRight = True
 
-        if snake_position[1] < 0:
-            snake_position[1]=window_y
-        else:
-            snake_position[1]=0
-        #game_over()
-     
-    # Touching the snake body
-    for block in snake_body[1:]:
-        if snake_position[0] == block[0] and snake_position[1] == block[1]:
-            game_over()
-     
-    # displaying score countinuously
-    show_score(1, white, 'times new roman', 20)
+            if deactivateLeft == False:
+                NeighbourCount += livelinessGrid[i][j - 1]
+            if deactivateBottom == False and deactivateLeft == False:
+                NeighbourCount += livelinessGrid[i + 1][j - 1]
+            if deactivateBottom == False:
+                NeighbourCount += livelinessGrid[i + 1][j]
+            if deactivateBottom == False and deactivateRight == False:
+                NeighbourCount += livelinessGrid[i + 1][j + 1]
+            if deactivateRight == False:
+                NeighbourCount += livelinessGrid[i][j + 1]
+            if deactivateTop == False and deactivateRight == False:
+                NeighbourCount += livelinessGrid[i - 1][j + 1]
+            if deactivateTop == False:
+                NeighbourCount += livelinessGrid[i - 1][j]
+            if deactivateTop == False and deactivateLeft == False:
+                NeighbourCount += livelinessGrid[i - 1][j - 1]
+
+            # above can be further simplified, as can below. as above, so below
+            # (idk i heard this in uncharted 3 but apparently they took it from a latin quote about
+            # the macro scale universal attributes and micro scale universal attributes)
+
+            if NeighbourCount < 2:
+                new_livelinessGrid[i][j] = 0
+            elif (NeighbourCount == 2 or NeighbourCount == 3) and livelinessGrid[i][
+                j] == 1:  # can stay alive as it has 2 or 3 neighbours
+                new_livelinessGrid[i][j] = 1
+            elif NeighbourCount == 3 and livelinessGrid[i][j] == 0:  # needs exactly 3 neighbours to be born
+                new_livelinessGrid[i][j] = 1
+            elif NeighbourCount > 3:  # >= 4 for accuracy to Conway's description of the rules on numberphile
+                new_livelinessGrid[i][j] = 0
+
+    # draw frame using data
+    drawframe(new_livelinessGrid, cellresttime, lineresttime, frameresttime, linesperframe,
+              cellsperline)  # linesperframe is basically how many y then cellsperline is how many x
+
+    #clearframe()  # this needs to be last operation so that more time is spent as displaying vs more time spent showing blank screen
+    # frame is over and wiped the screen for the next frame's preparation
+
+    # end = time.perf_counter()#if only 1 frame
+    # all of nextline and future frame calculations have been done. Track framerate now (overhead from file.write could be added, but it won't be for now)
+
+    livelinessGrid = copy.deepcopy(new_livelinessGrid)
+
+    frameCount += 1
+
+    if frameCount % targetFramerate == 0:
+        end = time.perf_counter()
+        delta = end - start
+        deltaPerFrameArithmeticAverage = delta / frameCount
+        file.write(
+            "Target: " + str(targetFramerate) + "\n" + "Actual: " + str(1 / deltaPerFrameArithmeticAverage) + "\n")
+        file.flush()  # will force the buffer to write to file so that if the program is closed without closing file, it will still save the last result
+        start = time.perf_counter()
      
     # Refresh game screen
     pygame.display.update()
  
     # Frame Per Second /Refresh Rate
-    fps.tick(snake_speed)
+    fps.tick(60)
 
 
 

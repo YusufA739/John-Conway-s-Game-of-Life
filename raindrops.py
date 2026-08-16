@@ -4,7 +4,7 @@ from colorama import Fore, Back, Style
 
 #change these to change frame size
 linesperframe = 50#55x209 for fullscreen command prompt for my pc
-cellsperline = 50
+cellsperline = 150
 # linesperframe = int(input("type in your height:"))
 # cellsperline = len(input("use this to calibrate your width and paste the line length:"))
 
