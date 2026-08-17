@@ -5,9 +5,23 @@ import random,sys,time,os,copy
 from colorama import Fore, Back, Style
 
 
+def remove1D(list1, target):#removes target elem, in a given 1D list/array
+    new_list = []
+    for carrier in list1:
+        if carrier == target:
+            pass
+        else:
+            new_list.append(carrier)
+    return new_list
+
+def removeDuplicateElements(list1):
+    return list(dict.fromkeys(list1))
+
+
+
 #change these to change frame size
-linesperframe = 72#55x209 for fullscreen command prompt for my pc
-cellsperline = 48
+linesperframe = 100#55x209 for fullscreen command prompt for my pc
+cellsperline = 100
 # linesperframe = int(input("type in your height:"))
 # cellsperline = len(input("use this to calibrate your width and paste the line length:"))
 
@@ -23,31 +37,63 @@ for carrier in range(cellsperline):
 for carrier in range(linesperframe):
     grid.append(copy.deepcopy(gridlines))
 
-for carrier in range(linesperframe):
-    for carrier in range(cellsperline):
-        livelines.append(random.randint(0,1))
-    livelinessGrid.append(copy.deepcopy(livelines))
-    livelines = []
+try:
+    with open("initialState.txt", "r") as file:
+        information = file.readlines()
 
-livelinessGrid[6][8] = 1
-livelinessGrid[7][7] = 1
+        linesperframe = len(information)
+        cellsperline = len(remove1D(information[0],"\n"))
 
-livelinessGrid[7][8] = 1
+        for line in information:
+            for cell in line:
+                isint = False
+                try:
+                    int(cell)
+                    isint = True
+                except:
+                    isint=False
 
-livelinessGrid[7][9] = 1
-livelinessGrid[8][7] = 1
-# livelinessGrid[8][8] = 1
-livelinessGrid[8][9] = 1
-livelinessGrid[9][8] = 1
+                # if cell != "\n":
+                if isint == True:
+                    livelines.append(int(cell))
+                #no need for elif, as it will just not run the if, if there is a linebreak char (now modified for any
+                #non-convertable string to int string char
+            livelinessGrid.append(copy.deepcopy(livelines))
+            livelines = []
+
+except:
+    with open("initialState.txt", "a") as file:
+        stringDataExport = ""
+        for line in range(linesperframe):
+            for cell in range(cellsperline):
+                livelines.append(random.randint(0,1))
+                stringDataExport += str(livelines[len(livelines)-1])
+            file.write(stringDataExport + "\n")
+            livelinessGrid.append(copy.deepcopy(livelines))
+            livelines = []
+            stringDataExport = ""
+        file.close()
+
+
+# livelinessGrid[6][8] = 12
+# livelinessGrid[7][7] = 1
+#
+# livelinessGrid[7][8] = 1
+#
+# livelinessGrid[7][9] = 1
+# livelinessGrid[8][7] = 1
+# # livelinessGrid[8][8] = 1
+# livelinessGrid[8][9] = 1
 # livelinessGrid[9][8] = 1
-# livelinessGrid[9][9] = 1
+# # livelinessGrid[9][8] = 1
+# # livelinessGrid[9][9] = 1
 
 #change to alter line rest time and frame rest time (in seconds)
 cellresttime = 0
 lineresttime = 0
-frameresttime = 0
+frameresttime = 0.016
 
-targetFramerate = 40
+targetFramerate = 144
 currentFramerate = 0
 
 frameCount = 0
@@ -78,14 +124,14 @@ def drawframe(imageData,crtGiven=None,lrtGiven=None,frtGiven=None,lpfGiven=None,
         for cell in range(cplGiven):
             if imageData[line][cell] == 0:
                 # sys.stdout.write(Fore.BLACK + str(imageData[line][cell]))
-                sys.stdout.write(Fore.BLACK + "0")
+                # sys.stdout.write(Fore.BLACK + "0")
                 pygame.draw.rect(game_window, black, pygame.Rect(line*10 , cell*10, 10, 10))
             else:
                 # sys.stdout.write(Fore.WHITE + str(imageData[line][cell]))
-                sys.stdout.write(Fore.WHITE + "0")
+                # sys.stdout.write(Fore.WHITE + "0")
                 pygame.draw.rect(game_window, white, pygame.Rect(line*10, cell*10, 10, 10))
             time.sleep(crtGiven)#sleep for cell
-        sys.stdout.write("\n")
+        # sys.stdout.write("\n")
 
         time.sleep(lrtGiven)#sleep for line
     time.sleep(frtGiven)#sleep for frame
@@ -104,8 +150,8 @@ if highestraindropnumber > lowestraindropnumber:
 
 
 #window size
-window_x= 720
-window_y= 480
+window_x = cellsperline * 10
+window_y = linesperframe * 10
 
 mixer.init()
 mixer.music.set_volume(1)
@@ -123,42 +169,21 @@ blue=pygame.Color(0,0,255)
 pygame.init()
 
 #init game window
-pygame.display.set_caption("SNAkES")
+pygame.display.set_caption("John Conway's Game of Life: Python Edition (PyGame")
 game_window=pygame.display.set_mode((window_x, window_y))
 
 #FPS (frames per second) controller
 fps=pygame.time.Clock()
 
-#setting default direction for snake
-direction="RIGHT"
-change_to=direction
 
-
- 
-# displaying Score function
-def show_score(choice, color, font, size):
-   
-    # creating font object score_font
-    score_font = pygame.font.SysFont(font, size)
-
-# game over function
-def game_over():
-   
-    # creating font object my_font
-    my_font = pygame.font.SysFont('times new roman', 50)
-     
-    # after 2 seconds we will quit the (now 1 sec)
-    # program
-    time.sleep(1)
-     
-    # deactivating pygame library
-    pygame.quit()
-    # quit the program
-    quit()
 
 # Main Function
 while True:
-    pygame.event.get()
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                quit()
 
     new_livelinessGrid = copy.deepcopy(livelinessGrid)
 
