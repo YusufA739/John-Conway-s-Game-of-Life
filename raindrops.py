@@ -170,6 +170,8 @@ while True:
     #end = time.perf_counter()#if only 1 frame
     #all of nextline and future frame calculations have been done. Track framerate now (overhead from file.write could be added, but it won't be for now)
 
+    #Lucario and Riolu especially with a Nickitt and a Pikachu with additions of baby pokemon
+    #measuring mass is easy if we know earth's gravity
     livelinessGrid = copy.deepcopy(new_livelinessGrid)
 
     frameCount += 1
