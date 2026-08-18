@@ -91,7 +91,7 @@ except:
 #change to alter line rest time and frame rest time (in seconds)
 cellresttime = 0
 lineresttime = 0
-frameresttime = 0.016
+frameresttime = 0
 
 targetFramerate = 144
 currentFramerate = 0
@@ -169,7 +169,7 @@ blue=pygame.Color(0,0,255)
 pygame.init()
 
 #init game window
-pygame.display.set_caption("John Conway's Game of Life: Python Edition (PyGame")
+pygame.display.set_caption("John Conway's Game of Life: Python Edition (PyGame)")
 game_window=pygame.display.set_mode((window_x, window_y))
 
 #FPS (frames per second) controller
