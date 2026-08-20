@@ -17,6 +17,81 @@ def remove1D(list1, target):#removes target elem, in a given 1D list/array
 def removeDuplicateElements(list1):
     return list(dict.fromkeys(list1))
 
+def logic(frameData,lpf,cpl):
+    global linesperframe, cellsperline
+
+    if lpf is None:
+        lpf = linesperframe
+    if cpl is None:
+        cpl = cellsperline
+
+    new_frameData = copy.deepcopy(frameData)
+
+    for i in range(lpf):
+        for j in range(cpl):
+            deactivateTop = False  # no negative i so no i-1
+            deactivateBottom = False  # no checking i+1
+            deactivateLeft = False  # no checking j-1
+            deactivateRight = False  # no checking j+1
+            NeighbourCount = 0
+            # if i == 0:
+            #     if j == 0:
+            #         NeighbourCount += livelinessGrid[i + 1][j]
+            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
+            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
+            #     elif j > 0:
+            #         NeighbourCount += livelinessGrid[i][j - 1]
+            #         NeighbourCount += livelinessGrid[i + 1][j - 1]
+            #         NeighbourCount += livelinessGrid[i + 1][j]
+            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
+            #         NeighbourCount += livelinessGrid[i][j + 1]
+            # didnt bother completing as ive simplified the redundancy between neighbour checking below
+
+            if i == 0:
+                deactivateTop = True
+            if i == lpf - 1:
+                deactivateBottom = True
+            if j == 0:
+                deactivateLeft = True
+            if j == cpl - 1:
+                deactivateRight = True
+
+            if deactivateLeft == False:
+                NeighbourCount += frameData[i][j - 1]
+            if deactivateBottom == False and deactivateLeft == False:
+                NeighbourCount += frameData[i + 1][j - 1]
+            if deactivateBottom == False:
+                NeighbourCount += frameData[i + 1][j]
+            if deactivateBottom == False and deactivateRight == False:
+                NeighbourCount += frameData[i + 1][j + 1]
+            if deactivateRight == False:
+                NeighbourCount += frameData[i][j + 1]
+            if deactivateTop == False and deactivateRight == False:
+                NeighbourCount += frameData[i - 1][j + 1]
+            if deactivateTop == False:
+                NeighbourCount += frameData[i - 1][j]
+            if deactivateTop == False and deactivateLeft == False:
+                NeighbourCount += frameData[i - 1][j - 1]
+
+            # above can be further simplified, as can below. as above, so below
+            # (idk i heard this in uncharted 3 but apparently they took it from a latin quote about
+            # the macro scale universal attributes and micro scale universal attributes)
+
+            if NeighbourCount < 2:
+                new_frameData[i][j] = 0
+            elif (NeighbourCount == 2 or NeighbourCount == 3) and frameData[i][j] == 1:  # can stay alive as it has
+                # 2 or 3 neighbours
+                new_frameData[i][j] = 1
+            elif NeighbourCount == 3 and frameData[i][j] == 0:  # needs exactly 3 neighbours to be born
+                new_frameData[i][j] = 1
+            elif NeighbourCount > 3:  # >= 4 for accuracy to Conway's description of the rules on numberphile
+                new_frameData[i][j] = 0
+
+    return new_frameData
+
+def rainlogic(currentframe,currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue):
+    return None
+
 
 
 #change these to change frame size
