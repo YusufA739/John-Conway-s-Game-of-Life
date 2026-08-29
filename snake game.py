@@ -24,11 +24,11 @@ def drawframe(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=None,
             if int(imageData[line][cell]) <= 0:
                 # sys.stdout.write(Fore.BLACK + str(imageData[line][cell]))
                 # sys.stdout.write(Fore.BLACK + "0")
-                pygame.draw.rect(game_window, black, pygame.Rect(line*10 , cell*10, 10, 10))
+                pygame.draw.rect(game_window, black, pygame.Rect(cell*10, line*10, 10, 10))
             else:
                 # sys.stdout.write(Fore.WHITE + str(imageData[line][cell]))
                 # sys.stdout.write(Fore.WHITE + "0")
-                pygame.draw.rect(game_window, white, pygame.Rect(line*10, cell*10, 10, 10))
+                pygame.draw.rect(game_window, white, pygame.Rect(cell*10, line*10, 10, 10))
             time.sleep(crtGiven)#sleep for cell
         # sys.stdout.write("\n")
 
@@ -49,6 +49,9 @@ def remove1D(list1, target):#removes target elem, in a given 1D list/array
 
 def removeDuplicateElements(list1):
     return list(dict.fromkeys(list1))
+
+def deepCopy(list1):
+    return copy.deepcopy(list1)
 
 def logic(frameData,lpf,cpl):
     global linesperframe, cellsperline
@@ -127,7 +130,7 @@ def logic(frameData,lpf,cpl):
 def rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue):
     # calculate the next frame's data (changes impacting frame: new line added at top, deletion at bottom)
     nextline = ""
-    lengthofraindropNextLine = currentframelengthofraindrop[0].copy()
+    lengthofraindropNextLine = deepCopy(currentframelengthofraindrop[0])
     for i in range(cellsperline):#same as len(lengthofraindropNextLine)
         if lengthofraindropNextLine[i] > stopvalue:
             if highestraindropnumber > lowestraindropnumber:
@@ -189,12 +192,21 @@ highestvalue = 10  # max len of raindrops
 lowestraindropnumber = 5
 highestraindropnumber = 5
 
-try:
+# Import data
+
+try:#if file found, load the data from it into memory (program/user space, i think)
     with open("initialState.txt", "r") as file:
         information = file.readlines()
 
+        cellsperline = 0
+        maxLens = []
+        for carrier in range(len(information)):
+            currentCellsperline = len(remove1D(information[carrier], "\n"))#not assigned outside, will go out of
+            #scope and be destroyed
+            if cellsperline < currentCellsperline:
+                cellsperline = currentCellsperline
         linesperframe = len(information)
-        cellsperline = len(remove1D(information[0],"\n"))
+        # cellsperline = len(remove1D(information[0],"\n"))
 
         for line in information:
             for cell in line:
@@ -210,10 +222,15 @@ try:
                     livelines.append(int(cell))
                 #no need for elif, as it will just not run the if, if there is a linebreak char (now modified for any
                 #non-convertable string to int string char
-            livelinessGrid.append(copy.deepcopy(livelines))
+            if len(livelines) != cellsperline:
+                for carrier in range(cellsperline - len(livelines)):
+                    livelines.append(0)#pad it out extra, otherwise we will get errors when it tries to render a pixel
+                    #that doesn't exist
+                    #next improvement: try to make padding out even (so, we pad on the left and right side
+            livelinessGrid.append(deepCopy(livelines))
             livelines = []
 
-except:
+except:#create the file instead, if not found
     with open("initialState.txt", "a") as file:
         stringDataExport = ""
         for line in range(linesperframe):
@@ -231,17 +248,14 @@ except:
 for placeholder in range(cellsperline):  # cells per line is given by user input
     lengthofraindropNextLine.append(random.randint(lowestvalue, highestvalue))
     nextline += str(random.randint(lowestraindropnumber, highestraindropnumber))
+    gridlines.append(0)
     # we need this to know initial raindrop lengths and placements
 
 # make the first frame using the first line
 for i in range(linesperframe):
-    currentframe.append(nextline)  # every line starts out the same singular line copied out
-    currentframelengthofraindrop.append(
-        lengthofraindropNextLine.copy())  # only the first line is necessary, but I will leave for now
-
-
-for carrier in range(cellsperline):
-    gridlines.append(0)
+    currentframe.append(nextline)# every line starts out the same singular line copied out
+    currentframelengthofraindrop.append(deepCopy(lengthofraindropNextLine))
+    # only the first line is necessary, but I will leave for now
 
 for carrier in range(linesperframe):
     grid.append(copy.deepcopy(gridlines))
@@ -328,9 +342,8 @@ while True:
     currentframelengthofraindrop = rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue)
     drawframe(currentframelengthofraindrop,lineresttime,cellresttime,frameresttime,linesperframe,cellsperline)
 
-    # draw frame using data
+    # draw frame using data. Note: linesperframe is basically how many y then cellsperline is how many x
     # drawframe(new_livelinessGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
-    # linesperframe is basically how many y then cellsperline is how many x
 
     #clearframe()  # this needs to be the last operation so that more time is spent as displaying vs more time spent showing blank screen
     # frame is over and wiped the screen for the next frame's preparation
