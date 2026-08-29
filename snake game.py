@@ -277,39 +277,6 @@ deactivateBottom = False# no checking i+1
 deactivateLeft = False# no checking j-1
 deactivateRight = False#no checking j+1
 
-#won't automatically clear frame as we allow user to have finer control over when they want it cleared
-#tradeoff between finer control and less controls is more vs less complexity, respectively
-def drawframe(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
-    global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
-    if lrtGiven is None:
-        lrtGiven = lineresttime
-    if crtGiven is None:
-        crtGiven = cellresttime
-    if frtGiven is None:
-        frtGiven = frameresttime
-    if lpfGiven is None:
-        lpfGiven = linesperframe
-    if cplGiven is None:
-        cplGiven = cellsperline
-    # display next frame data
-    for line in range(lpfGiven):
-        for cell in range(cplGiven):
-            if int(imageData[line][cell]) <= 0:
-                # sys.stdout.write(Fore.BLACK + str(imageData[line][cell]))
-                # sys.stdout.write(Fore.BLACK + "0")
-                pygame.draw.rect(game_window, black, pygame.Rect(line*10 , cell*10, 10, 10))
-            else:
-                # sys.stdout.write(Fore.WHITE + str(imageData[line][cell]))
-                # sys.stdout.write(Fore.WHITE + "0")
-                pygame.draw.rect(game_window, white, pygame.Rect(line*10, cell*10, 10, 10))
-            time.sleep(crtGiven)#sleep for cell
-        # sys.stdout.write("\n")
-
-        time.sleep(lrtGiven)#sleep for line
-    time.sleep(frtGiven)#sleep for frame
-
-def clearframe():
-    os.system("cls")
 
 #unused so far (from old raindrops code)
 #change these to change what numbers appear in the raindrops
