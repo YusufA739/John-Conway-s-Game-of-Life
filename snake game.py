@@ -1,10 +1,15 @@
+#imports of scripts and libs (*section 0*)
+
 import time,pygame,random
 from pygame import mixer
 
 import random,sys,time,os,copy
 from colorama import Fore, Back, Style
 
-#won't automatically clear frame as we allow user to have finer control over when they want it cleared
+#function declarations (*section 1*)
+
+#won't automatically wipe frame (when using text renderer, via commenting and uncommenting -> fix this!)
+#as we allow user to have finer control over when they want it cleared
 #tradeoff between finer control and less controls is more vs less complexity, respectively
 def drawframe(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
     global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
@@ -166,6 +171,9 @@ def rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestrain
 
     return currentframelengthofraindrop
 
+
+#variable declaration (*section 2*)
+
 #change these to change frame size
 linesperframe = 50#55x209 for fullscreen command prompt for my pc
 cellsperline = 100
@@ -174,7 +182,10 @@ cellsperline = 100
 
 grid = []#used to keep all pixels zero
 livelinessGrid = []
-new_livelinessGrid = []
+new_livelinessGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
+# livelinessGrid = deepCopy(logic(x,y,z)), to prevent any issues with byref data
+
+#helper arrays (for building our 2D array grids, for tracking pixel data between frames)
 gridlines = []#for building grid only (see below in for loops)
 livelines = []#for building grid only (see below in for loops)
 
@@ -191,6 +202,62 @@ highestvalue = 10  # max len of raindrops
 # change these to change what numbers appear in the raindrops
 lowestraindropnumber = 5
 highestraindropnumber = 5
+
+
+#code moved from lower sections to better match section labelling
+
+#change to alter line rest time and frame rest time (in seconds)
+cellresttime = 0
+lineresttime = 0
+frameresttime = 0
+
+#target framerate
+targetFramerate = 144
+currentFramerate = 0
+
+frameCount = 0
+# file = open("framerate.txt", "w")#there seems to be a time limit on file opening. will investigate and temp patch
+start = time.perf_counter()#for inital measurement, will be wrong until it updates in if statement
+# (reduces frame delays due to extra timer processing)
+
+#assigment of vars used for logic checks
+deactivateTop = False # no negative i so no i-1
+deactivateBottom = False# no checking i+1
+deactivateLeft = False# no checking j-1
+deactivateRight = False#no checking j+1
+
+
+#unused so far (from old raindrops code)
+#change these to change what numbers appear in the raindrops
+lowestraindropnumber = 0
+highestraindropnumber = 9
+if highestraindropnumber > lowestraindropnumber:
+    highestraindropnumber = lowestraindropnumber
+
+
+
+#manual checks to see if code is working
+
+# livelinessGrid[6][8] = 12
+# livelinessGrid[7][7] = 1
+#
+# livelinessGrid[7][8] = 1
+#
+# livelinessGrid[7][9] = 1
+# livelinessGrid[8][7] = 1
+# # livelinessGrid[8][8] = 1
+# livelinessGrid[8][9] = 1
+# livelinessGrid[9][8] = 1
+# # livelinessGrid[9][8] = 1
+# # livelinessGrid[9][9] = 1
+
+
+
+
+
+# Import data and create grid frame for rendering (*section 3*)
+
+# import data and adjust grid frame for Conway-Based variables (*section 3.1*)
 
 # Import data
 
@@ -244,6 +311,8 @@ except:#create the file instead, if not found
         file.close()
 
 
+# create grid frame for other variables (*section 3.2*)
+
 # make the first line
 for placeholder in range(cellsperline):  # cells per line is given by user input
     lengthofraindropNextLine.append(random.randint(lowestvalue, highestvalue))
@@ -261,47 +330,11 @@ for carrier in range(linesperframe):
     grid.append(copy.deepcopy(gridlines))
 
 
-# livelinessGrid[6][8] = 12
-# livelinessGrid[7][7] = 1
-#
-# livelinessGrid[7][8] = 1
-#
-# livelinessGrid[7][9] = 1
-# livelinessGrid[8][7] = 1
-# # livelinessGrid[8][8] = 1
-# livelinessGrid[8][9] = 1
-# livelinessGrid[9][8] = 1
-# # livelinessGrid[9][8] = 1
-# # livelinessGrid[9][9] = 1
 
-#change to alter line rest time and frame rest time (in seconds)
-cellresttime = 0
-lineresttime = 0
-frameresttime = 0
+# pygame code (*section 4*)
 
-targetFramerate = 144
-currentFramerate = 0
-
-frameCount = 0
-file = open("framerate.txt", "w")
-start = time.perf_counter()#for inital measurement, will be wrong until it updates in if statement (reduces frame delays due to extra timer processing)
-
-deactivateTop = False # no negative i so no i-1
-deactivateBottom = False# no checking i+1
-deactivateLeft = False# no checking j-1
-deactivateRight = False#no checking j+1
-
-
-#unused so far (from old raindrops code)
-#change these to change what numbers appear in the raindrops
-lowestraindropnumber = 0
-highestraindropnumber = 9
-if highestraindropnumber > lowestraindropnumber:
-    highestraindropnumber = lowestraindropnumber
-
-
-
-
+#variable assignment does take place here, but it looks more logically sound to keep it in this section as it matches
+#the heading better
 #window size
 window_x = cellsperline * 10
 window_y = linesperframe * 10
