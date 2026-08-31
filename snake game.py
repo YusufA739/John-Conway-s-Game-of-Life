@@ -355,7 +355,7 @@ blue=pygame.Color(0,0,255)
 pygame.init()
 
 #init game window
-pygame.display.set_caption("John Conway's Game of Life: Python Edition (PyGame)")
+pygame.display.set_caption("John Conway's Game of Life and Others: Python Edition (PyGame)")
 game_window=pygame.display.set_mode((window_x, window_y))
 
 #FPS (frames per second) controller
