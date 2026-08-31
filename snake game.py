@@ -392,6 +392,7 @@ while True:
         end = time.perf_counter()
         delta = end - start
         deltaPerFrameArithmeticAverage = delta / frameCount
+        file = open("framerate.txt", "w")#moved here for fix
         file.write(
             "Target: " + str(targetFramerate) + "\n" + "Actual: " + str(1 / deltaPerFrameArithmeticAverage) + "\n")
         file.flush()  # will force the buffer to write to file so that if the program is closed without closing file, it will still save the last result
