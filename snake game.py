@@ -182,13 +182,14 @@ cellsperline = 100
 
 grid = []#used to keep all pixels zero
 livelinessGrid = []
-new_livelinessGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
+# new_livelinessGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
 # livelinessGrid = deepCopy(logic(x,y,z)), to prevent any issues with byref data
 
 #helper arrays (for building our 2D array grids, for tracking pixel data between frames)
 gridlines = []#for building grid only (see below in for loops)
 livelines = []#for building grid only (see below in for loops)
 
+#not helper arrays etc.
 nextline = ""
 currentframe = []
 currentframelengthofraindrop = []
@@ -371,20 +372,23 @@ while True:
                 pygame.quit()
                 quit()
 
-    # new_livelinessGrid = logic(livelinessGrid,linesperframe,cellsperline)
-    currentframelengthofraindrop = rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue)
-    drawframe(currentframelengthofraindrop,lineresttime,cellresttime,frameresttime,linesperframe,cellsperline)
+    # currentframelengthofraindrop = deepCopy(rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue))
+    # drawframe(currentframelengthofraindrop,lineresttime,cellresttime,frameresttime,linesperframe,cellsperline)
 
     # draw frame using data. Note: linesperframe is basically how many y then cellsperline is how many x
-    # drawframe(new_livelinessGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
+    livelinessGrid = deepCopy(logic(livelinessGrid,linesperframe,cellsperline))
+    drawframe(livelinessGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
 
-    #clearframe()  # this needs to be the last operation so that more time is spent as displaying vs more time spent showing blank screen
+    #clearframe()  # this needs to be the last operation so that more time is spent as displaying
+    # vs more time spent showing blank screen
     # frame is over and wiped the screen for the next frame's preparation
+    #only used when using text rendering solution -> make it change over without manual intervention!
 
     # end = time.perf_counter()#if only 1 frame
-    # all of nextline and future frame calculations have been done. Track framerate now (overhead from file.write could be added, but it won't be for now)
+    # all of nextline and future frame calculations have been done. Track framerate now
+    # (overhead from file.write could be added, but it won't be for now)
 
-    # livelinessGrid = copy.deepcopy(new_livelinessGrid)
+    # livelinessGrid = copy.deepcopy(new_livelinessGrid) #useless line, has been made redundant
 
     frameCount += 1
 
@@ -396,6 +400,7 @@ while True:
         file.write(
             "Target: " + str(targetFramerate) + "\n" + "Actual: " + str(1 / deltaPerFrameArithmeticAverage) + "\n")
         file.flush()  # will force the buffer to write to file so that if the program is closed without closing file, it will still save the last result
+        file.close()
         start = time.perf_counter()
      
     # Refresh game screen
