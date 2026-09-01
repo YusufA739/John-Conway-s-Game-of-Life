@@ -77,15 +77,15 @@ def logic(frameData,lpf,cpl):
             NeighbourCount = 0
             # if i == 0:
             #     if j == 0:
-            #         NeighbourCount += livelinesGrid[i + 1][j]
-            #         NeighbourCount += livelinesGrid[i + 1][j + 1]
-            #         NeighbourCount += livelinesGrid[i + 1][j + 1]
+            #         NeighbourCount += liveGrid[i + 1][j]
+            #         NeighbourCount += liveGrid[i + 1][j + 1]
+            #         NeighbourCount += liveGrid[i + 1][j + 1]
             #     elif j > 0:
-            #         NeighbourCount += livelinesGrid[i][j - 1]
-            #         NeighbourCount += livelinesGrid[i + 1][j - 1]
-            #         NeighbourCount += livelinesGrid[i + 1][j]
-            #         NeighbourCount += livelinesGrid[i + 1][j + 1]
-            #         NeighbourCount += livelinesGrid[i][j + 1]
+            #         NeighbourCount += liveGrid[i][j - 1]
+            #         NeighbourCount += liveGrid[i + 1][j - 1]
+            #         NeighbourCount += liveGrid[i + 1][j]
+            #         NeighbourCount += liveGrid[i + 1][j + 1]
+            #         NeighbourCount += liveGrid[i][j + 1]
             # didnt bother completing as ive simplified the redundancy between neighbour checking below
 
             if i == 0:
@@ -159,10 +159,10 @@ def rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestrain
     for carrier in range(linesperframe - 1, 0, -1):
         # update all unaltered lines down, skipping overwriting the first, so line 1 and 2 will be identical for now,
         # and also not rewriting the last line to another line
-        currentframelengthofraindrop[carrier] = currentframelengthofraindrop[carrier - 1].copy()
+        currentframelengthofraindrop[carrier] = deepCopy(currentframelengthofraindrop[carrier - 1])
 
     # finally, update the next frame's first line
-    currentframelengthofraindrop[0] = lengthofraindropNextLine.copy()
+    currentframelengthofraindrop[0] = deepCopy(lengthofraindropNextLine)
     # tracks droplength remaining to generate. Tells us when the raindrop has reached zero length.
     # Once zero length, we wait until it goes past a certain negative
     # negative acts like the reverse of a drop. So just black bg/a gap.
@@ -170,6 +170,84 @@ def rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestrain
 
 
     return currentframelengthofraindrop
+
+def shiftFrameToEnd(listQueue, queueLength=None, newFirstElement=None):
+    #deque and enqueue
+    queueLength = len(listQueue) if queueLength is None else queueLength #autofilled code, need to research this
+    for carrier in range(queueLength - 1, 0, -1):
+        # update all unaltered lines down, skipping overwriting the first, so line 1 and 2 will be identical for now,
+        # and also not rewriting the last line to another line
+        listQueue[carrier] = deepCopy(listQueue[carrier - 1])
+
+    # listQueue[0] = newFinalElement.copy() if newFinalElement is not None else listQueue[0].copy()
+    if newFirstElement is not None:
+        listQueue[0] = deepCopy(newFirstElement)
+
+    # return deepCopy(listQueue) #not needed, as seen practically by rainlogic and logic
+    return listQueue
+
+def shiftFrameToBeginning(listQueue, queueLength=None, newLastElement=None):
+    # deque and enqueue
+    queueLength = len(listQueue) if queueLength is None else queueLength  # autofilled code, need to research this
+    for carrier in range(0, queueLength - 1, 1):
+        # update all unaltered lines down, skipping overwriting the first, so line 1 and 2 will be identical for now,
+        # and also not rewriting the last line to another line
+        listQueue[carrier] = deepCopy(listQueue[carrier + 1])
+
+    # listQueue[0] = newFinalElement.copy() if newFinalElement is not None else listQueue[0].copy()
+    if newLastElement is not None:
+        listQueue[queueLength - 1] = deepCopy(newLastElement)
+
+    return listQueue
+
+
+def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue):
+
+    frameCount = 0
+    framebuffer = []
+    liveGrid = []
+    gridlines = []
+    livelines = []
+    grid = []
+    currentframelengthofraindrop = []
+    lengthofraindropNextLine = []
+    currentframe = []
+    nextline = ""
+
+    # file = open("framerate.txt", "w")#there seems to be a time limit on file opening. will investigate and temp patch
+    start = time.perf_counter()  # for inital measurement, will be wrong until it updates in if statement
+
+
+    for line in range(linesperframe):
+        for cell in range(cellsperline):
+            livelines.append(random.randint(0, 1))
+        liveGrid.append(copy.deepcopy(livelines))
+        livelines = []
+
+
+    # make the first line
+    for placeholder in range(cellsperline):  # cells per line is given by user input
+        lengthofraindropNextLine.append(random.randint(lowestvalue, highestvalue))
+        nextline += str(random.randint(lowestraindropnumber, highestraindropnumber))
+        gridlines.append(0)
+        # we need this to know initial raindrop lengths and placements
+
+    # make the first frame using the first line
+    for i in range(linesperframe):
+        currentframe.append(nextline)  # every line starts out the same singular line copied out
+        currentframelengthofraindrop.append(deepCopy(lengthofraindropNextLine))
+        # only the first line is necessary, but I will leave for now
+
+    for carrier in range(linesperframe):
+        grid.append(copy.deepcopy(gridlines))
+
+    # create framebuffer with given size (reduces logic in main loop to check framebuffer size until it it is filled
+    # (list vs array methodology)
+
+    for carrier in range(framebufferMaxSize):
+        framebuffer.append([0])  # a single list with a single integer element for every index of the list
+
+    return frameCount, framebuffer, liveGrid, currentframelengthofraindrop
 
 
 #variable declaration (*section 2*)
@@ -181,9 +259,9 @@ cellsperline = 100
 # cellsperline = len(input("use this to calibrate your width and paste the line length:"))
 
 grid = []#used to keep all pixels zero
-livelinesGrid = []
-# new_livelinesGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
-# livelinesGrid = deepCopy(logic(x,y,z)), to prevent any issues with byref data
+liveGrid = []
+# new_liveGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
+# liveGrid = deepCopy(logic(x,y,z)), to prevent any issues with byref data
 
 #helper arrays (for building our 2D array grids, for tracking pixel data between frames)
 gridlines = []#for building grid only (see below in for loops)
@@ -217,6 +295,10 @@ targetFramerate = 144
 currentFramerate = 0
 
 frameCount = 0
+
+framebuffer = []
+framebufferMaxSize = targetFramerate
+
 # file = open("framerate.txt", "w")#there seems to be a time limit on file opening. will investigate and temp patch
 start = time.perf_counter()#for inital measurement, will be wrong until it updates in if statement
 # (reduces frame delays due to extra timer processing)
@@ -239,18 +321,18 @@ if highestraindropnumber > lowestraindropnumber:
 
 #manual checks to see if code is working
 
-# livelinesGrid[6][8] = 12
-# livelinesGrid[7][7] = 1
+# liveGrid[6][8] = 12
+# liveGrid[7][7] = 1
 #
-# livelinesGrid[7][8] = 1
+# liveGrid[7][8] = 1
 #
-# livelinesGrid[7][9] = 1
-# livelinesGrid[8][7] = 1
-# # livelinesGrid[8][8] = 1
-# livelinesGrid[8][9] = 1
-# livelinesGrid[9][8] = 1
-# # livelinesGrid[9][8] = 1
-# # livelinesGrid[9][9] = 1
+# liveGrid[7][9] = 1
+# liveGrid[8][7] = 1
+# # liveGrid[8][8] = 1
+# liveGrid[8][9] = 1
+# liveGrid[9][8] = 1
+# # liveGrid[9][8] = 1
+# # liveGrid[9][9] = 1
 
 
 
@@ -295,7 +377,7 @@ try:#if file found, load the data from it into memory (program/user space, i thi
                     livelines.append(0)#pad it out extra, otherwise we will get errors when it tries to render a pixel
                     #that doesn't exist
                     #next improvement: try to make padding out even (so, we pad on the left and right side
-            livelinesGrid.append(deepCopy(livelines))
+            liveGrid.append(deepCopy(livelines))
             livelines = []
 
 except:#create the file instead, if not found
@@ -306,7 +388,7 @@ except:#create the file instead, if not found
                 livelines.append(random.randint(0,1))
                 stringDataExport += str(livelines[len(livelines)-1])
             file.write(stringDataExport + "\n")
-            livelinesGrid.append(copy.deepcopy(livelines))
+            liveGrid.append(copy.deepcopy(livelines))
             livelines = []
             stringDataExport = ""
         file.close()
@@ -330,6 +412,12 @@ for i in range(linesperframe):
 for carrier in range(linesperframe):
     grid.append(copy.deepcopy(gridlines))
 
+
+#create framebuffer with given size (reduces logic in main loop to check framebuffer size until it it is filled
+# (list vs array methodology)
+
+for carrier in range(framebufferMaxSize):
+    framebuffer.append([0])#a single list with a single integer element for every index of the list
 
 
 # pygame code (*section 4*)
@@ -373,11 +461,21 @@ while True:
                 quit()
 
     # currentframelengthofraindrop = deepCopy(rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue))
+    # framebuffer = shiftFrameToBeginning(framebuffer, newLastElement=liveGrid)
+    # for carrier in range(0, framebufferMaxSize - 1, 1):
+    #     framebuffer[carrier] = framebuffer[carrier + 1]
     # drawframe(currentframelengthofraindrop,lineresttime,cellresttime,frameresttime,linesperframe,cellsperline)
 
     # draw frame using data. Note: linesperframe is basically how many y then cellsperline is how many x
-    livelinesGrid = deepCopy(logic(livelinesGrid,linesperframe,cellsperline))
-    drawframe(livelinesGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
+    liveGrid = deepCopy(logic(liveGrid,linesperframe,cellsperline))
+
+    framebuffer = shiftFrameToBeginning(framebuffer, newLastElement=liveGrid)
+    for carrier in range(0, framebufferMaxSize - 1, 1):
+        if framebuffer[carrier] == framebuffer[carrier + 1]:
+            frameCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
+
+
+    drawframe(liveGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
 
     #clearframe()  # this needs to be the last operation so that more time is spent as displaying
     # vs more time spent showing blank screen
@@ -388,7 +486,7 @@ while True:
     # all of nextline and future frame calculations have been done. Track framerate now
     # (overhead from file.write could be added, but it won't be for now)
 
-    # livelinesGrid = copy.deepcopy(new_livelinesGrid) #useless line, has been made redundant
+    # liveGrid = copy.deepcopy(new_liveGrid) #useless line, has been made redundant
 
     frameCount += 1
 
