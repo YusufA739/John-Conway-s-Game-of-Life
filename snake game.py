@@ -447,7 +447,8 @@ window_y = linesperframe * 10
 
 mixer.init()
 mixer.music.set_volume(1)
-mixer.Sound("Ilmari Hakkola - Bad Piggies Theme.mp3").play(-1)
+musicOn = True
+# mixer.Sound("Ilmari Hakkola - Bad Piggies Theme.mp3").play(-1)
 
 
 #colors
@@ -476,6 +477,8 @@ while True:
             if event.key == pygame.K_ESCAPE:
                 pygame.quit()
                 quit()
+        if event.type == pygame.QUIT:
+            pygame.quit()
 
     # currentframelengthofraindrop = deepCopySkip(rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue))
     # framebuffer = shiftFrameToBeginning(framebuffer, newLastElement=liveGrid)
