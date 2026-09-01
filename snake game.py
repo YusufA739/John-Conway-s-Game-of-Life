@@ -58,6 +58,12 @@ def removeDuplicateElements(list1):
 def deepCopy(list1):
     return copy.deepcopy(list1)
 
+#useful for performance, as there is no reason to do a deep copy in the first place. Python seems to be handling
+#vars as byval even if its byref behind the scenes. Easier to do this, and ctrl f and ctrl r (replace) instead
+#of manually re-editing back, as then i can also just as easily reenable this via ctrl f and ctrl r method
+def deepCopySkip(list1):
+    return list1
+
 def logic(frameData,lpf,cpl):
     global linesperframe, cellsperline
 
@@ -135,7 +141,7 @@ def logic(frameData,lpf,cpl):
 def rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue):
     # calculate the next frame's data (changes impacting frame: new line added at top, deletion at bottom)
     nextline = ""
-    lengthofraindropNextLine = deepCopy(currentframelengthofraindrop[0])
+    lengthofraindropNextLine = deepCopySkip(currentframelengthofraindrop[0])
     for i in range(cellsperline):#same as len(lengthofraindropNextLine)
         if lengthofraindropNextLine[i] > stopvalue:
             if highestraindropnumber > lowestraindropnumber:
@@ -159,10 +165,10 @@ def rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestrain
     for carrier in range(linesperframe - 1, 0, -1):
         # update all unaltered lines down, skipping overwriting the first, so line 1 and 2 will be identical for now,
         # and also not rewriting the last line to another line
-        currentframelengthofraindrop[carrier] = deepCopy(currentframelengthofraindrop[carrier - 1])
+        currentframelengthofraindrop[carrier] = deepCopySkip(currentframelengthofraindrop[carrier - 1])
 
     # finally, update the next frame's first line
-    currentframelengthofraindrop[0] = deepCopy(lengthofraindropNextLine)
+    currentframelengthofraindrop[0] = deepCopySkip(lengthofraindropNextLine)
     # tracks droplength remaining to generate. Tells us when the raindrop has reached zero length.
     # Once zero length, we wait until it goes past a certain negative
     # negative acts like the reverse of a drop. So just black bg/a gap.
@@ -177,13 +183,13 @@ def shiftFrameToEnd(listQueue, queueLength=None, newFirstElement=None):
     for carrier in range(queueLength - 1, 0, -1):
         # update all unaltered lines down, skipping overwriting the first, so line 1 and 2 will be identical for now,
         # and also not rewriting the last line to another line
-        listQueue[carrier] = deepCopy(listQueue[carrier - 1])
+        listQueue[carrier] = deepCopySkip(listQueue[carrier - 1])
 
     # listQueue[0] = newFinalElement.copy() if newFinalElement is not None else listQueue[0].copy()
     if newFirstElement is not None:
-        listQueue[0] = deepCopy(newFirstElement)
+        listQueue[0] = deepCopySkip(newFirstElement)
 
-    # return deepCopy(listQueue) #not needed, as seen practically by rainlogic and logic
+    # return deepCopySkip(listQueue) #not needed, as seen practically by rainlogic and logic
     return listQueue
 
 def shiftFrameToBeginning(listQueue, queueLength=None, newLastElement=None):
@@ -192,11 +198,11 @@ def shiftFrameToBeginning(listQueue, queueLength=None, newLastElement=None):
     for carrier in range(0, queueLength - 1, 1):
         # update all unaltered lines down, skipping overwriting the first, so line 1 and 2 will be identical for now,
         # and also not rewriting the last line to another line
-        listQueue[carrier] = deepCopy(listQueue[carrier + 1])
+        listQueue[carrier] = deepCopySkip(listQueue[carrier + 1])
 
     # listQueue[0] = newFinalElement.copy() if newFinalElement is not None else listQueue[0].copy()
     if newLastElement is not None:
-        listQueue[queueLength - 1] = deepCopy(newLastElement)
+        listQueue[queueLength - 1] = deepCopySkip(newLastElement)
 
     return listQueue
 
@@ -235,7 +241,7 @@ def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber,
     # make the first frame using the first line
     for i in range(linesperframe):
         currentframe.append(nextline)  # every line starts out the same singular line copied out
-        currentframelengthofraindrop.append(deepCopy(lengthofraindropNextLine))
+        currentframelengthofraindrop.append(deepCopySkip(lengthofraindropNextLine))
         # only the first line is necessary, but I will leave for now
 
     for carrier in range(linesperframe):
@@ -245,7 +251,7 @@ def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber,
     # (list vs array methodology)
 
     for carrier in range(framebufferMaxSize):
-        framebuffer.append([0])  # a single list with a single integer element for every index of the list
+        framebuffer.append([carrier])  # a single list with a single integer element for every index of the list
 
     return frameCount, framebuffer, liveGrid, currentframelengthofraindrop
 
@@ -261,7 +267,7 @@ cellsperline = 100
 grid = []#used to keep all pixels zero
 liveGrid = []
 # new_liveGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
-# liveGrid = deepCopy(logic(x,y,z)), to prevent any issues with byref data
+# liveGrid = deepCopySkip(logic(x,y,z)), to prevent any issues with byref data
 
 #helper arrays (for building our 2D array grids, for tracking pixel data between frames)
 gridlines = []#for building grid only (see below in for loops)
@@ -377,7 +383,7 @@ try:#if file found, load the data from it into memory (program/user space, i thi
                     livelines.append(0)#pad it out extra, otherwise we will get errors when it tries to render a pixel
                     #that doesn't exist
                     #next improvement: try to make padding out even (so, we pad on the left and right side
-            liveGrid.append(deepCopy(livelines))
+            liveGrid.append(deepCopySkip(livelines))
             livelines = []
 
 except:#create the file instead, if not found
@@ -406,7 +412,7 @@ for placeholder in range(cellsperline):  # cells per line is given by user input
 # make the first frame using the first line
 for i in range(linesperframe):
     currentframe.append(nextline)# every line starts out the same singular line copied out
-    currentframelengthofraindrop.append(deepCopy(lengthofraindropNextLine))
+    currentframelengthofraindrop.append(deepCopySkip(lengthofraindropNextLine))
     # only the first line is necessary, but I will leave for now
 
 for carrier in range(linesperframe):
@@ -417,7 +423,7 @@ for carrier in range(linesperframe):
 # (list vs array methodology)
 
 for carrier in range(framebufferMaxSize):
-    framebuffer.append([0])#a single list with a single integer element for every index of the list
+    framebuffer.append([carrier])#a single list with a single integer element for every index of the list
 
 
 # pygame code (*section 4*)
@@ -460,18 +466,18 @@ while True:
                 pygame.quit()
                 quit()
 
-    # currentframelengthofraindrop = deepCopy(rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue))
+    # currentframelengthofraindrop = deepCopySkip(rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue))
     # framebuffer = shiftFrameToBeginning(framebuffer, newLastElement=liveGrid)
     # for carrier in range(0, framebufferMaxSize - 1, 1):
     #     framebuffer[carrier] = framebuffer[carrier + 1]
     # drawframe(currentframelengthofraindrop,lineresttime,cellresttime,frameresttime,linesperframe,cellsperline)
 
     # draw frame using data. Note: linesperframe is basically how many y then cellsperline is how many x
-    liveGrid = deepCopy(logic(liveGrid,linesperframe,cellsperline))
+    liveGrid = deepCopySkip(logic(liveGrid,linesperframe,cellsperline))
 
     framebuffer = shiftFrameToBeginning(framebuffer, newLastElement=liveGrid)
-    for carrier in range(0, framebufferMaxSize - 1, 1):
-        if framebuffer[carrier] == framebuffer[carrier + 1]:
+    for carrier in range(0, framebufferMaxSize - 2, 1):
+        if framebuffer[carrier] == framebuffer[carrier + 2]:
             frameCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
 
 
