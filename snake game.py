@@ -1,6 +1,6 @@
 #imports of scripts and libs (*section 0*)
 
-import time,pygame,random
+import time,pygame,random,math
 from pygame import mixer
 
 import random,sys,time,os,copy
@@ -311,6 +311,10 @@ frameCount = 0
 
 framebuffer = []
 framebufferMaxSize = targetFramerate
+framebufferSearchWindowMin = 2#start at 2 frames ahead inclusive and compare
+framebufferSearchWindowMax = 5#at 60fps assumed, so mult and round for other targets if wanted to
+if targetFramerate > 60:
+    framebufferSearchWindowMax = 5 * math.ceil(targetFramerate/60)
 
 # file = open("framerate.txt", "w")#there seems to be a time limit on file opening. will investigate and temp patch
 start = time.perf_counter()#for inital measurement, will be wrong until it updates in if statement
@@ -483,9 +487,11 @@ while True:
     liveGrid = deepCopySkip(logic(liveGrid,linesperframe,cellsperline))
 
     framebuffer = shiftFrameToBeginning(framebuffer, newLastElement=liveGrid)
-    for carrier in range(0, framebufferMaxSize - 2, 1):
-        if framebuffer[carrier] == framebuffer[carrier + 2]:
-            frameCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
+    for carrier in range(0, framebufferMaxSize - framebufferSearchWindowMax, 1):
+        for searchCarrier in range(framebufferSearchWindowMin, framebufferSearchWindowMax + 1, 1):
+            if (framebuffer[carrier] == framebuffer[carrier + searchCarrier]):
+                # print(searchCarrier)#tells you the gap between same frame detection (debugging only)
+                frameCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
 
 
     drawframe(liveGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
