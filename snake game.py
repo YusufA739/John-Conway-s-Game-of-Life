@@ -223,12 +223,19 @@ def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber,
     # file = open("framerate.txt", "w")#there seems to be a time limit on file opening. will investigate and temp patch
     start = time.perf_counter()  # for inital measurement, will be wrong until it updates in if statement
 
+    file = open("JC_InitialState_"+str(random.randint(0,99999999))+".txt", "a")
+    currentJCOutput = ""
 
     for line in range(linesperframe):
         for cell in range(cellsperline):
             livelines.append(random.randint(0, 1))
+            currentJCOutput += str(livelines[cell])
         liveGrid.append(copy.deepcopy(livelines))
+        file.write(currentJCOutput + "\n")
+        currentJCOutput = ""
         livelines = []
+    file.close()#forces buffer to flush and file is then created during runtime for users to see appear. Useful
+    # in case code crashes due to error and you lose the current run of JC game initial conditions
 
 
     # make the first line
