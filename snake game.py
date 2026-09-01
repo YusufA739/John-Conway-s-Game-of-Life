@@ -77,15 +77,15 @@ def logic(frameData,lpf,cpl):
             NeighbourCount = 0
             # if i == 0:
             #     if j == 0:
-            #         NeighbourCount += livelinessGrid[i + 1][j]
-            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
-            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
+            #         NeighbourCount += livelinesGrid[i + 1][j]
+            #         NeighbourCount += livelinesGrid[i + 1][j + 1]
+            #         NeighbourCount += livelinesGrid[i + 1][j + 1]
             #     elif j > 0:
-            #         NeighbourCount += livelinessGrid[i][j - 1]
-            #         NeighbourCount += livelinessGrid[i + 1][j - 1]
-            #         NeighbourCount += livelinessGrid[i + 1][j]
-            #         NeighbourCount += livelinessGrid[i + 1][j + 1]
-            #         NeighbourCount += livelinessGrid[i][j + 1]
+            #         NeighbourCount += livelinesGrid[i][j - 1]
+            #         NeighbourCount += livelinesGrid[i + 1][j - 1]
+            #         NeighbourCount += livelinesGrid[i + 1][j]
+            #         NeighbourCount += livelinesGrid[i + 1][j + 1]
+            #         NeighbourCount += livelinesGrid[i][j + 1]
             # didnt bother completing as ive simplified the redundancy between neighbour checking below
 
             if i == 0:
@@ -181,9 +181,9 @@ cellsperline = 100
 # cellsperline = len(input("use this to calibrate your width and paste the line length:"))
 
 grid = []#used to keep all pixels zero
-livelinessGrid = []
-# new_livelinessGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
-# livelinessGrid = deepCopy(logic(x,y,z)), to prevent any issues with byref data
+livelinesGrid = []
+# new_livelinesGrid = []#can be removed, and then overwrite in-place the new pixel data to the current storage using ->
+# livelinesGrid = deepCopy(logic(x,y,z)), to prevent any issues with byref data
 
 #helper arrays (for building our 2D array grids, for tracking pixel data between frames)
 gridlines = []#for building grid only (see below in for loops)
@@ -239,18 +239,18 @@ if highestraindropnumber > lowestraindropnumber:
 
 #manual checks to see if code is working
 
-# livelinessGrid[6][8] = 12
-# livelinessGrid[7][7] = 1
+# livelinesGrid[6][8] = 12
+# livelinesGrid[7][7] = 1
 #
-# livelinessGrid[7][8] = 1
+# livelinesGrid[7][8] = 1
 #
-# livelinessGrid[7][9] = 1
-# livelinessGrid[8][7] = 1
-# # livelinessGrid[8][8] = 1
-# livelinessGrid[8][9] = 1
-# livelinessGrid[9][8] = 1
-# # livelinessGrid[9][8] = 1
-# # livelinessGrid[9][9] = 1
+# livelinesGrid[7][9] = 1
+# livelinesGrid[8][7] = 1
+# # livelinesGrid[8][8] = 1
+# livelinesGrid[8][9] = 1
+# livelinesGrid[9][8] = 1
+# # livelinesGrid[9][8] = 1
+# # livelinesGrid[9][9] = 1
 
 
 
@@ -295,7 +295,7 @@ try:#if file found, load the data from it into memory (program/user space, i thi
                     livelines.append(0)#pad it out extra, otherwise we will get errors when it tries to render a pixel
                     #that doesn't exist
                     #next improvement: try to make padding out even (so, we pad on the left and right side
-            livelinessGrid.append(deepCopy(livelines))
+            livelinesGrid.append(deepCopy(livelines))
             livelines = []
 
 except:#create the file instead, if not found
@@ -306,7 +306,7 @@ except:#create the file instead, if not found
                 livelines.append(random.randint(0,1))
                 stringDataExport += str(livelines[len(livelines)-1])
             file.write(stringDataExport + "\n")
-            livelinessGrid.append(copy.deepcopy(livelines))
+            livelinesGrid.append(copy.deepcopy(livelines))
             livelines = []
             stringDataExport = ""
         file.close()
@@ -376,8 +376,8 @@ while True:
     # drawframe(currentframelengthofraindrop,lineresttime,cellresttime,frameresttime,linesperframe,cellsperline)
 
     # draw frame using data. Note: linesperframe is basically how many y then cellsperline is how many x
-    livelinessGrid = deepCopy(logic(livelinessGrid,linesperframe,cellsperline))
-    drawframe(livelinessGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
+    livelinesGrid = deepCopy(logic(livelinesGrid,linesperframe,cellsperline))
+    drawframe(livelinesGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
 
     #clearframe()  # this needs to be the last operation so that more time is spent as displaying
     # vs more time spent showing blank screen
@@ -388,7 +388,7 @@ while True:
     # all of nextline and future frame calculations have been done. Track framerate now
     # (overhead from file.write could be added, but it won't be for now)
 
-    # livelinessGrid = copy.deepcopy(new_livelinessGrid) #useless line, has been made redundant
+    # livelinesGrid = copy.deepcopy(new_livelinesGrid) #useless line, has been made redundant
 
     frameCount += 1
 
