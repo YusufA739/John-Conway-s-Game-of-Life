@@ -11,18 +11,35 @@ from colorama import Fore, Back, Style
 #won't automatically wipe frame (when using text renderer, via commenting and uncommenting -> fix this!)
 #as we allow user to have finer control over when they want it cleared
 #tradeoff between finer control and less controls is more vs less complexity, respectively
-def drawframe(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
+def drawframe(imageData,crtGiven=None,lrtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
     global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
-    if lrtGiven is None:
+    if lrtGiven is None or lrtGiven < 0:
         lrtGiven = lineresttime
-    if crtGiven is None:
+    if crtGiven is None or crtGiven < 0:
         crtGiven = cellresttime
-    if frtGiven is None:
+    if frtGiven is None or frtGiven < 0:
         frtGiven = frameresttime
-    if lpfGiven is None:
+    if lpfGiven is None or lpfGiven < 0:
         lpfGiven = linesperframe
-    if cplGiven is None:
+    if cplGiven is None or cplGiven < 0:
         cplGiven = cellsperline
+
+    cplPositive = True if crtGiven > 0 else False
+    lrtPositive = True if lrtGiven > 0 else False
+    frtPositive = True if frtGiven > 0 else False
+
+    # cplPositive = False
+    # lrtPositive = False
+    # frtPositive = False
+    #
+    # if crtGiven > 0:
+    #     cplPositive = True  # positive natural number. Zero is not natural (well in cs it is, but yeah)
+    # if lrtGiven > 0:
+    #     lrtPositive = True
+    # if frtGiven > 0:
+    #     frtPositive = True
+
+
     # display next frame data
     for line in range(lpfGiven):
         for cell in range(cplGiven):
@@ -34,11 +51,66 @@ def drawframe(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=None,
                 # sys.stdout.write(Fore.WHITE + str(imageData[line][cell]))
                 # sys.stdout.write(Fore.WHITE + "0")
                 pygame.draw.rect(game_window, white, pygame.Rect(cell*10, line*10, 10, 10))
-            time.sleep(crtGiven)#sleep for cell
+            if cplPositive:
+                time.sleep(crtGiven)#sleep for cell
+                pygame.display.update()
         # sys.stdout.write("\n")
 
-        time.sleep(lrtGiven)#sleep for line
-    time.sleep(frtGiven)#sleep for frame
+        if lrtPositive:
+            time.sleep(lrtGiven)#sleep for line
+            if not cplPositive:
+                pygame.display.update()
+    if frtPositive:
+        time.sleep(frtGiven)#sleep for frame
+        if not cplPositive and not lrtPositive:
+            pygame.display.update()
+
+def drawframeText(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
+    global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
+    if lrtGiven is None:
+        lrtGiven = lineresttime
+    if crtGiven is None:
+        crtGiven = cellresttime
+    if frtGiven is None:
+        frtGiven = frameresttime
+    if lpfGiven is None:
+        lpfGiven = linesperframe
+    if cplGiven is None:
+        cplGiven = cellsperline
+
+    # cplPositive = False
+    # lrtPositive = False
+    # frtPositive = False
+    #
+    # if crtGiven > 0:
+    #     cplPositive = True  # positive natural number. Zero is not natural (well in cs it is, but yeah)
+    # if lrtGiven > 0:
+    #     lrtPositive = True
+    # if frtGiven > 0:
+    #     frtPositive = True
+
+    cplPositive = True if crtGiven > 0 else False
+    lrtPositive = True if lrtGiven > 0 else False
+    frtPositive = True if frtGiven > 0 else False
+
+
+    # display next frame data
+    for line in range(lpfGiven):
+        for cell in range(cplGiven):
+            if int(imageData[line][cell]) <= 0:
+                sys.stdout.write(Fore.BLACK + str(imageData[line][cell]))
+                sys.stdout.write(Fore.BLACK + "0")
+                # pygame.draw.rect(game_window, black, pygame.Rect(cell*10, line*10, 10, 10))
+            else:
+                sys.stdout.write(Fore.WHITE + str(imageData[line][cell]))
+                sys.stdout.write(Fore.WHITE + "0")
+                # pygame.draw.rect(game_window, white, pygame.Rect(cell*10, line*10, 10, 10))
+            if cplPositive: time.sleep(crtGiven)#sleep for cell
+        sys.stdout.write("\n")
+
+        if lrtPositive: time.sleep(lrtGiven)  # sleep for line
+    if frtPositive: time.sleep(frtGiven)  # sleep for frame
+
 
 def clearframe():
     os.system("cls")
@@ -208,8 +280,6 @@ def shiftFrameToBeginning(listQueue, queueLength=None, newLastElement=None):
 
 
 def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue):
-
-    frameCount = 0
     framebuffer = []
     liveGrid = []
     gridlines = []
@@ -260,7 +330,8 @@ def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber,
     for carrier in range(framebufferMaxSize):
         framebuffer.append([carrier])  # a single list with a single integer element for every index of the list
 
-    return frameCount, framebuffer, liveGrid, currentframelengthofraindrop
+    resetFrameCount = True
+    return resetFrameCount, framebuffer, liveGrid, currentframelengthofraindrop
 
 
 #variable declaration (*section 2*)
@@ -300,7 +371,7 @@ highestraindropnumber = 5
 
 #change to alter line rest time and frame rest time (in seconds)
 cellresttime = 0
-lineresttime = 0
+lineresttime = 0.01
 frameresttime = 0
 
 #target framerate
@@ -308,6 +379,7 @@ targetFramerate = 144
 currentFramerate = 0
 
 frameCount = 0
+resetframeCount = False
 
 framebuffer = []
 framebufferMaxSize = targetFramerate
@@ -468,6 +540,8 @@ game_window=pygame.display.set_mode((window_x, window_y))
 #FPS (frames per second) controller
 fps=pygame.time.Clock()
 
+# Frame Per Second /Refresh Rate
+fps.tick(60)
 
 
 # Main Function
@@ -494,7 +568,7 @@ while True:
         for searchCarrier in range(framebufferSearchWindowMin, framebufferSearchWindowMax + 1, 1):
             if (framebuffer[carrier] == framebuffer[carrier + searchCarrier]):
                 # print(searchCarrier)#tells you the gap between same frame detection (debugging only)
-                frameCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
+                resetframeCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
 
 
     drawframe(liveGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
@@ -522,12 +596,12 @@ while True:
         file.flush()  # will force the buffer to write to file so that if the program is closed without closing file, it will still save the last result
         file.close()
         start = time.perf_counter()
-     
-    # Refresh game screen
-    pygame.display.update()
- 
-    # Frame Per Second /Refresh Rate
-    fps.tick(60)
 
+    if resetframeCount:
+        resetframeCount = False
+        frameCount = 0
+
+    # Refresh game screen #now in drawframe()
+    # pygame.display.update() #move this into drawframe() for a crt effect #moved
 
 
