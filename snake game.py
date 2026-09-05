@@ -160,9 +160,9 @@ updatePreFrame=False,updatePostFrame=False):
     PrecplPositive = True if PrecrtGiven > 0 else False
     PrelrtPositive = True if PrelrtGiven > 0 else False
     PrefrtPositive = True if PrefrtGiven > 0 else False #check top
-    PostcplPositive = True if PrecrtGiven > 0 else False
-    PostlrtPositive = True if PrelrtGiven > 0 else False
-    PostfrtPositive = True if PrefrtGiven > 0 else False
+    PostcplPositive = True if PostcrtGiven > 0 else False
+    PostlrtPositive = True if PostlrtGiven > 0 else False
+    PostfrtPositive = True if PostfrtGiven > 0 else False
 
 
     # cplPositive = False
@@ -677,7 +677,7 @@ while True:
                 resetframeCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
 
 
-    drawframe(liveGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
+    drawframeHard(liveGrid, PostfrtGiven=0.013, lpfGiven=linesperframe, cplGiven=cellsperline,updatePostFrame=True)
 
     #clearframeText()  # this needs to be the last operation so that more time is spent as displaying
     # vs more time spent showing blank screen
