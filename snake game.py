@@ -11,7 +11,7 @@ from colorama import Fore, Back, Style
 #won't automatically wipe frame (when using text renderer, via commenting and uncommenting -> fix this!)
 #as we allow user to have finer control over when they want it cleared
 #tradeoff between finer control and less controls is more vs less complexity, respectively
-def drawframe(imageData,crtGiven=None,lrtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
+def drawframeEasy(imageData,crtGiven=None,lrtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
     global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
     if lrtGiven is None or lrtGiven < 0:
         lrtGiven = lineresttime
@@ -27,6 +27,12 @@ def drawframe(imageData,crtGiven=None,lrtGiven=None,frtGiven=None,lpfGiven=None,
     cplPositive = True if crtGiven > 0 else False
     lrtPositive = True if lrtGiven > 0 else False
     frtPositive = True if frtGiven > 0 else False
+
+    updatePostDraw = False
+
+    if (not cplPositive and not lrtPositive and not frtPositive):
+        updatePostDraw = True
+
 
     # cplPositive = False
     # lrtPositive = False
@@ -64,6 +70,9 @@ def drawframe(imageData,crtGiven=None,lrtGiven=None,frtGiven=None,lpfGiven=None,
         time.sleep(frtGiven)#sleep for frame
         if not cplPositive and not lrtPositive:
             pygame.display.update()
+
+    if updatePostDraw:
+        pygame.display.update()
 
 def drawframeText(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=None,cplGiven=None):
     global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
@@ -111,8 +120,105 @@ def drawframeText(imageData,lrtGiven=None,crtGiven=None,frtGiven=None,lpfGiven=N
         if lrtPositive: time.sleep(lrtGiven)  # sleep for line
     if frtPositive: time.sleep(frtGiven)  # sleep for frame
 
+#I could split crt to have time cellresttimeprecell and cellresttimepostcell, but it's too much effort for something
+#that will never be used
+#will not updateframe() if you forget to update the frame using the boolean params below. Will follow to the "t" without
+#self-correcting any issues
+def drawframeHard(imageData,
+PrecrtGiven=None,PrelrtGiven=None,PrefrtGiven=None,PostcrtGiven=None,PostlrtGiven=None,PostfrtGiven=None,
+lpfGiven=None,cplGiven=None,
+updatePreDraw=False,updatePostDraw=False,updatePreCell=False,updatePostCell=False,updatePreLine=False,updatePostLine=False,
+updatePreFrame=False,updatePostFrame=False):
 
-def clearframe():
+    # PrefrtPositive = True if PrefrtGiven > 0 else False #might as well just copy cond into the if directly
+    if updatePreDraw or updatePreFrame:
+        if PrefrtGiven > 0:
+            time.sleep(PrefrtGiven)# sleep for frame
+        updateframe()
+
+
+    global cellresttime, lineresttime, frameresttime, linesperframe, cellsperline
+    if PrecrtGiven is None or PrecrtGiven < 0:
+        PrecrtGiven = cellresttime
+    if PrelrtGiven is None or PrelrtGiven < 0:
+        PrelrtGiven = lineresttime
+    if PrefrtGiven is None or PrefrtGiven < 0:
+        PrefrtGiven = frameresttime
+    if PostcrtGiven is None or PostcrtGiven < 0:
+        PostcrtGiven = cellresttime
+    if PostlrtGiven is None or PostlrtGiven < 0:
+        PostlrtGiven = lineresttime
+    if PostfrtGiven is None or PostfrtGiven < 0:
+        PostfrtGiven = frameresttime
+
+    if lpfGiven is None or lpfGiven < 0:
+        lpfGiven = linesperframe
+    if cplGiven is None or cplGiven < 0:
+        cplGiven = cellsperline
+
+
+    PrecplPositive = True if PrecrtGiven > 0 else False
+    PrelrtPositive = True if PrelrtGiven > 0 else False
+    PrefrtPositive = True if PrefrtGiven > 0 else False #check top
+    PostcplPositive = True if PrecrtGiven > 0 else False
+    PostlrtPositive = True if PrelrtGiven > 0 else False
+    PostfrtPositive = True if PrefrtGiven > 0 else False
+
+
+    # cplPositive = False
+    # lrtPositive = False
+    # frtPositive = False
+    #
+    # if crtGiven > 0:
+    #     cplPositive = True  # positive natural number. Zero is not natural (well in cs it is, but yeah)
+    # if lrtGiven > 0:
+    #     lrtPositive = True
+    # if frtGiven > 0:
+    #     frtPositive = True
+
+
+    # display next frame data
+    for line in range(lpfGiven):
+        if updatePreLine:
+            if PrelrtPositive:
+                time.sleep(PrelrtGiven)#sleep for line
+            updateframe()
+
+        for cell in range(cplGiven):
+            if updatePreCell:
+                if PrecplPositive:
+                    time.sleep(PrecrtGiven)# sleep for cell
+                updateframe()
+
+            if int(imageData[line][cell]) <= 0:
+                # sys.stdout.write(Fore.BLACK + str(imageData[line][cell]))
+                # sys.stdout.write(Fore.BLACK + "0")
+                pygame.draw.rect(game_window, black, pygame.Rect(cell*10, line*10, 10, 10))
+            else:
+                # sys.stdout.write(Fore.WHITE + str(imageData[line][cell]))
+                # sys.stdout.write(Fore.WHITE + "0")
+                pygame.draw.rect(game_window, white, pygame.Rect(cell*10, line*10, 10, 10))
+
+            if updatePostCell:
+                if PostcplPositive:
+                    time.sleep(PostcrtGiven)#sleep for cell
+                pygame.display.update()
+        # sys.stdout.write("\n")
+        if updatePostLine:
+            if PostlrtPositive:
+                time.sleep(PostlrtGiven)#sleep for line
+            pygame.display.update()
+
+    if updatePostDraw or updatePostFrame:
+        if PostfrtPositive:
+            time.sleep(PostfrtGiven)  # sleep for frame
+        pygame.display.update()
+
+
+def updateframe():
+    pygame.display.update()
+
+def clearframeText():
     os.system("cls")
 
 def remove1D(list1, target):#removes target elem, in a given 1D list/array
@@ -144,7 +250,7 @@ def logic(frameData,lpf,cpl):
     if cpl is None:
         cpl = cellsperline
 
-    new_frameData = deepCopySkip(frameData) #copy.deepCopy(frameData)
+    new_frameData = deepCopy(frameData) #copy.deepCopy(frameData)
 
     for i in range(lpf):
         for j in range(cpl):
@@ -371,7 +477,7 @@ highestraindropnumber = 5
 
 #change to alter line rest time and frame rest time (in seconds)
 cellresttime = 0
-lineresttime = 0.002
+lineresttime = 0
 frameresttime = 0
 
 #target framerate
@@ -573,7 +679,7 @@ while True:
 
     drawframe(liveGrid, cellresttime, lineresttime, frameresttime, linesperframe, cellsperline)
 
-    #clearframe()  # this needs to be the last operation so that more time is spent as displaying
+    #clearframeText()  # this needs to be the last operation so that more time is spent as displaying
     # vs more time spent showing blank screen
     # frame is over and wiped the screen for the next frame's preparation
     #only used when using text rendering solution -> make it change over without manual intervention!
