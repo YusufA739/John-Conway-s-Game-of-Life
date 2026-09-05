@@ -144,7 +144,7 @@ def logic(frameData,lpf,cpl):
     if cpl is None:
         cpl = cellsperline
 
-    new_frameData = copy.deepcopy(frameData)
+    new_frameData = deepCopySkip(frameData) #copy.deepCopy(frameData)
 
     for i in range(lpf):
         for j in range(cpl):
@@ -300,7 +300,7 @@ def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber,
         for cell in range(cellsperline):
             livelines.append(random.randint(0, 1))
             # currentJCOutput += str(livelines[cell])
-        liveGrid.append(copy.deepcopy(livelines))
+        liveGrid.append(deepCopySkip(livelines))
         # file.write(currentJCOutput + "\n")
         # currentJCOutput = ""
         livelines = []
@@ -322,7 +322,7 @@ def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber,
         # only the first line is necessary, but I will leave for now
 
     for carrier in range(linesperframe):
-        grid.append(copy.deepcopy(gridlines))
+        grid.append(deepCopySkip(gridlines))
 
     # create framebuffer with given size (reduces logic in main loop to check framebuffer size until it it is filled
     # (list vs array methodology)
@@ -371,7 +371,7 @@ highestraindropnumber = 5
 
 #change to alter line rest time and frame rest time (in seconds)
 cellresttime = 0
-lineresttime = 0.01
+lineresttime = 0.002
 frameresttime = 0
 
 #target framerate
@@ -477,7 +477,7 @@ except:#create the file instead, if not found
                 livelines.append(random.randint(0,1))
                 stringDataExport += str(livelines[len(livelines)-1])
             file.write(stringDataExport + "\n")
-            liveGrid.append(copy.deepcopy(livelines))
+            liveGrid.append(deepCopySkip(livelines))
             livelines = []
             stringDataExport = ""
         file.close()
@@ -499,7 +499,7 @@ for i in range(linesperframe):
     # only the first line is necessary, but I will leave for now
 
 for carrier in range(linesperframe):
-    grid.append(copy.deepcopy(gridlines))
+    grid.append(deepCopySkip(gridlines))
 
 
 #create framebuffer with given size (reduces logic in main loop to check framebuffer size until it it is filled
