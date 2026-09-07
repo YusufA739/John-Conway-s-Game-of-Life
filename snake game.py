@@ -439,6 +439,16 @@ def setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber,
     resetFrameCount = True
     return resetFrameCount, framebuffer, liveGrid, currentframelengthofraindrop
 
+def dataCollector(grid, cellsperline, linesperframe, framecount):
+    liveCells=0
+    for line in range(linesperframe):
+        for cell in range(cellsperline):
+            if grid[line][cell] > 0:
+                liveCells+=1
+    with open("livecellvsframecount.txt", "a") as file:
+        file.write(str(liveCells) + "," + str(framecount) + "\n")
+        file.close()
+
 
 #variable declaration (*section 2*)
 
@@ -660,6 +670,9 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
 
+    if frameCount == 0:
+        dataCollector(liveGrid, cellsperline, linesperframe, frameCount)  # start
+
     # currentframelengthofraindrop = deepCopySkip(rainlogic(currentframelengthofraindrop,linesperframe,cellsperline,lowestraindropnumber,highestraindropnumber,lowestvalue,stopvalue,highestvalue))
     # framebuffer = shiftFrameToBeginning(framebuffer, newLastElement=liveGrid)
     # for carrier in range(0, framebufferMaxSize - 1, 1):
@@ -674,10 +687,10 @@ while True:
         for searchCarrier in range(framebufferSearchWindowMin, framebufferSearchWindowMax + 1, 1):
             if (framebuffer[carrier] == framebuffer[carrier + searchCarrier]):
                 # print(searchCarrier)#tells you the gap between same frame detection (debugging only)
+                dataCollector(liveGrid, cellsperline, linesperframe, frameCount)#final
                 resetframeCount, framebuffer, liveGrid, currentframe = setup(linesperframe, cellsperline, framebufferMaxSize, lowestraindropnumber, highestraindropnumber, lowestvalue, highestvalue)
 
-
-    drawframeHard(liveGrid, PostfrtGiven=0.013, lpfGiven=linesperframe, cplGiven=cellsperline,updatePostFrame=True)
+    drawframeHard(liveGrid, lpfGiven=linesperframe, cplGiven=cellsperline,updatePostFrame=True)
 
     #clearframeText()  # this needs to be the last operation so that more time is spent as displaying
     # vs more time spent showing blank screen
