@@ -1,4 +1,4 @@
-from DesmosKiller.DesmosKiller.DesmosKiller import *
+from DesmosKiller.DesmosKiller import *
 import numpy as np
 import seaborn as sns
 
